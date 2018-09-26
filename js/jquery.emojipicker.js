@@ -1,4 +1,12 @@
-;(function($) {
+; (function (root, factory) {
+    if (typeof define === 'function' && define.amd) {
+        define(['emoji-js'], factory);
+    } else if (typeof exports === 'object') {
+        module.exports = factory(require('emoji-js'));
+    } else {
+        root.emojiPicker = factory(root.EmojiConvertor);
+    }
+})(this, function (EmojiConvertor) {
 
   var pluginName = "emojiPicker",
       defaults = {
@@ -11,7 +19,17 @@
         recentCount: 36,
         emojiSet: 'apple',
         container: 'body',
-        button: true
+        button: true,
+        emojiSheets: {
+            'apple': '/sheets/sheet_apple_64_indexed_128.png',
+            'google': '/sheets/sheet_google_64_indexed_128.png',
+            'twitter': '/sheets/sheet_twitter_64_indexed_128.png',
+            'emojione': '/sheets/sheet_emojione_64_indexed_128.png',
+            'facebook': '/sheets/sheet_facebook_64_indexed_128.png',
+            'messenger': '/sheets/sheet_messenger_64_indexed_128.png'
+        },
+        allowNative: true,
+        emojiType: 'google'
       };
 
   var MIN_WIDTH = 280,
@@ -31,14 +49,32 @@
     { name: 'flag', label: 'Flags' }
   ];
 
+
   function EmojiPicker( element, options ) {
 
+      
     this.element = element;
     this.$el = $(element);
 
     this.settings = $.extend( {}, defaults, options );
 
     this.$container = $(this.settings.container);
+
+
+      var self = this;
+      self.emoji = new EmojiConvertor();
+
+      self.emoji.allow_native = this.settings.allowNative;
+      self.emoji.img_set = this.settings.emojiType;
+      self.emoji.use_sheet = true;
+      self.emoji.supports_css = true;
+      self.emoji.img_sets['apple']['sheet'] = this.settings.emojiSheets.apple;
+      self.emoji.img_sets['google']['sheet'] = this.settings.emojiSheets.google;
+      self.emoji.img_sets['twitter']['sheet'] = this.settings.emojiSheets.twitter;
+      self.emoji.img_sets['emojione']['sheet'] = this.settings.emojiSheets.emojione;
+      self.emoji.img_sets['facebook']['sheet'] = this.settings.emojiSheets.facebook;
+      self.emoji.img_sets['messenger']['sheet'] = this.settings.emojiSheets.messenger;
+
 
     // (type) Safety first
     this.settings.width = parseInt(this.settings.width);
@@ -112,7 +148,7 @@
     createPicker: function() {
 
       // Show template
-      this.$picker = $( getPickerHTML() )
+      this.$picker = $( getPickerHTML(this.emoji) )
         .appendTo( this.$container )
         .width(this.settings.width)
         .height(this.settings.height)
@@ -189,32 +225,30 @@
           1. Find the nearest positioned element by crawling up the ancestors, record it's offset
           2. Find the bottom left or right of the input element, record this (Account for position setting of left or right)
           3. Find the difference between the two, as this will become our new position
-          4. Magic.
+          4. Magic. ?????fucking stupid thing you called it magic? Massive Ass Giberish I Call
 
           N.B. The removed code had a reference to top/bottom positioning, but I don't see the use case for this..
       */
 
       // Step 1
       // Luckily jquery already does this...
-      var positionedParent = this.$picker.offsetParent();
-      var parentOffset = positionedParent.offset(); // now have a top/left object
+      var positionedParent = this.$picker.parent();
 
       // Step 2
       var elOffset = this.$el.offset();
-      if(this.settings.position == 'right'){
-        elOffset.left += this.$el.outerWidth() - this.settings.width;
-      }
+
       elOffset.top += this.$el.outerHeight();
 
-      // Step 3
-      var diffOffset = {
-        top: (elOffset.top - parentOffset.top),
-        left: (elOffset.left - parentOffset.top)
-      };
+
+      if (positionedParent.width() < elOffset.left + this.$picker.width() + 10)
+          elOffset.left = Math.max(positionedParent.width() - this.$picker.width(), 10);
+
+      if (positionedParent.height() < elOffset.top + this.$picker.height() + 10)
+          elOffset.top = Math.max(positionedParent.height() - this.$picker.height(), 10);
 
       this.$picker.css({
-        top: diffOffset.top,
-        left: diffOffset.left
+          top: elOffset.top + this.$picker.parent().scrollTop(),
+          left: elOffset.left
       });
 
       return this;
@@ -258,17 +292,17 @@
     emojiClicked: function(e) { var clickTarget = $(e.target);
       var emojiSpan;
       if (clickTarget.is('em')) {
-        emojiSpan = clickTarget.find('span');
+        emojiSpan = clickTarget;
       } else {
-        emojiSpan = clickTarget.parent().find('.emoji');
+        emojiSpan = clickTarget.parent().parent();
       }
 
-      var emojiShortcode = emojiSpan.attr('class').split('emoji-')[1];
+      var emojiShortcode = emojiSpan.attr('class').split('emoji ')[1];
       var emojiUnicode = toUnicode(findEmoji(emojiShortcode).unicode[defaults.emojiSet]);
 
       insertAtCaret(this.element, emojiUnicode);
       addToLocalStorage(emojiShortcode);
-      updateRecentlyUsed(emojiShortcode);
+      updateRecentlyUsed(emojiShortcode, this.emoji);
 
       // For anyone who is relying on the keyup event
       $(this.element).trigger("keyup");
@@ -279,16 +313,22 @@
       this.element.dispatchEvent(event);
     },
 
-    emojiMouseover: function(e) {
-      var emojiShortcode = $(e.target).parent().find('.emoji').attr('class').split('emoji-')[1];
+    emojiMouseover: function (e) {
+        var target = $(e.target);
+        var i = 0;
+        while (!target.is('em') && i<3) {
+            target = target.parent();
+            i++;
+        }
+        var emojiShortcode = target.attr('class').split('emoji ')[1];
       var $shortcode = $(e.target).parents('.emojiPicker').find('.shortcode');
-      $shortcode.find('.random').hide();
-      $shortcode.find('.info').show().html('<div class="emoji emoji-' + emojiShortcode + '"></div><em>' + emojiShortcode + '</em>');
+      $shortcode.find('.random').hide(); 
+      $shortcode.find('.info').show().html('<div style="display: table-cell; vertical-align: middle;">' + this.emoji.replace_colons(':' + emojiShortcode + ':') + '<em style="vertical-align: center;">' + emojiShortcode + '</em></div>');
     },
 
     emojiMouseout: function(e) {
-      $(e.target).parents('.emojiPicker').find('.shortcode .info').empty().hide();
-      $(e.target).parents('.emojiPicker').find('.shortcode .random').show();
+      //$(e.target).parents('.emojiPicker').find('.shortcode .info').empty().hide();
+      //$(e.target).parents('.emojiPicker').find('.shortcode .random').show();
     },
 
     emojiCategoryClicked: function(e) {
@@ -396,12 +436,12 @@
         var results = [];
         searchEmojiWrap.find('em').remove();
 
-        $.each($.fn.emojiPicker.emojis, function(i, emoji) {
+        $.each($.fn.emojiPicker.emojis, $.proxy(function(i, emoji) {
           var shortcode = emoji.shortcode;
-          if ( shortcode.indexOf(searchTerm) > -1 ) {
-            results.push('<em><div class="emoji emoji-' + shortcode + '"></div></em>');
+          if ( shortcode.indexOf(searchTerm) > -1 ) { 
+              results.push('<em class="emoji ' + shortcode + '">' + this.emoji.replace_colons(':' + shortcode + ':') +'</em>');
           }
-        });
+        },this));
         searchEmojiWrap.append(results.join(''));
       } else {
         sections.show();
@@ -439,7 +479,7 @@
 
   /* ---------------------------------------------------------------------- */
 
-  function getPickerHTML() {
+  function getPickerHTML(emojiConverter) {
     var nodes = [];
     var aliases = {
       'undefined': 'object'
@@ -498,7 +538,7 @@
       nodes.push('<h1>Recently Used</h1><div class="wrap">');
 
       for (var i = recentlyUsedEmojis.length-1; i > -1 ; i--) {
-        nodes.push('<em><span class="emoji emoji-' + recentlyUsedEmojis[i] + '"></span></em>');
+          nodes.push('<em class="emoji ' + recentlyUsedEmojis[i] + '">' + emojiConverter.replace_colons(':' + recentlyUsedEmojis[i] + ':') +'</em>');
       }
       nodes.push('</div></section>');
     }
@@ -510,7 +550,7 @@
       nodes.push('<h1>' + categories[i].label + '</h1><div class="wrap">');
       for (var j = 0; j < category_length; j++) {
         var emoji = items[ categories[i].name ][ j ];
-        nodes.push('<em><span class="emoji emoji-' + emoji.shortcode + '"></span></em>');
+        nodes.push('<em class="emoji ' + emoji.shortcode + '">' + emojiConverter.replace_colons(':' + emoji.shortcode + ':') +'</em>');
       }
       nodes.push('</div></section>');
     }
@@ -518,18 +558,18 @@
 
     // Shortcode section
     nodes.push('<div class="shortcode"><span class="random">');
-    nodes.push('<em class="tabTitle">' + generateEmojiOfDay() + '</em>');
-    nodes.push('</span><span class="info"></span></div>');
+    nodes.push('<em class="tabTitle">' + generateEmojiOfDay(emojiConverter) + '</em>');
+    nodes.push('</span><span class="info" ></span></div>');
 
     nodes.push('</div>');
     return nodes.join("\n");
   }
 
-  function generateEmojiOfDay() {
+  function generateEmojiOfDay(emojiConverter) {
     var emojis = $.fn.emojiPicker.emojis;
     var i = Math.floor(Math.random() * (364 - 0) + 0);
     var emoji = emojis[i];
-    return 'Daily Emoji: <span class="eod"><span class="emoji emoji-' + emoji.name + '"></span> <span class="emojiName">' + emoji.name + '</span></span>';
+    return 'Daily Emoji: <span class="eod">' + emojiConverter.replace_colons(':' + emoji.name + ':') +' <span class="emojiName">' + emoji.name + '</span></span>';
   }
 
   function findEmoji(emojiShortcode) {
@@ -592,13 +632,13 @@
     localStorage.emojis = JSON.stringify(recentlyUsedEmojis);
   }
 
-  function updateRecentlyUsed(emoji) {
+  function updateRecentlyUsed(emoji, emojiConverter) {
     var recentlyUsedEmojis = JSON.parse(localStorage.emojis);
     var emojis = [];
     var recent = $('section.recent');
 
     for (var i = recentlyUsedEmojis.length-1; i >= 0; i--) {
-      emojis.push('<em><span class="emoji emoji-' + recentlyUsedEmojis[i] + '"></span></em>');
+        emojis.push('<em class="emoji ' + recentlyUsedEmojis[i] + '">' + emojiConverter.replace_colons(':' + recentlyUsedEmojis[i] + ':') +'</em>');
     }
 
     // Fix height as emojis are added
@@ -634,4 +674,4 @@
     }
   }
 
-})(jQuery);
+});
