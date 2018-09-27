@@ -327,8 +327,8 @@
     },
 
     emojiMouseout: function(e) {
-      //$(e.target).parents('.emojiPicker').find('.shortcode .info').empty().hide();
-      //$(e.target).parents('.emojiPicker').find('.shortcode .random').show();
+      $(e.target).parents('.emojiPicker').find('.shortcode .info').empty().hide();
+      $(e.target).parents('.emojiPicker').find('.shortcode .random').show();
     },
 
     emojiCategoryClicked: function(e) {
