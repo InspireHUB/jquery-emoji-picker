@@ -32,7 +32,7 @@
 .emojiPicker .sections {overflow:scroll; position:relative; background:#fff; z-index:10;}
 .emojiPicker section {overflow:hidden; width:100%; padding-top:1%;}
 .emojiPicker section h1 {clear:both; margin:0; padding:2%; color:#444; font-size:14px; text-transform:capitalize;}
-.emojiPicker section em {float:left; display:inline-block; padding:2%; border-radius:4px; cursor:pointer;}
+.emojiPicker section em {float:left; display:inline-block; padding:2%; border-radius:4px; cursor:pointer; font-size:8pt;}
 .emojiPicker section em:hover {background-color:#eee;}
 .emojiPicker section em div {width:40px; margin:1%;}
 .emojiPicker section em div:hover {cursor:pointer;}
@@ -45,7 +45,6 @@
 .emojiPicker .shortcode .info {display:none;}
 .emojiPicker .shortcode .emoji {position:relative; top:4px; left:8px; width:1.9em; height:1.9em; margin-right:20px;}
 .emojiPicker .shortcode em {position:relative; top:1px; margin-left:5px; color:#444; font-size:12px; font-weight:900; font-style:normal;}
-.emojiPicker .shortcode em span.emoji-outer {height: 1.5em; width:1.5em;}
 .emojiPicker .shortcode em.tabTitle {position:relative; top:10px; left:8px; font-size:14px;}
 .emojiPicker .shortcode em.tabTitle .count {font-size:12px; font-weight:500;}
 .emojiPicker .shortcode .random .tabTitle {color:#7d7d7d; font-size:12px;}
