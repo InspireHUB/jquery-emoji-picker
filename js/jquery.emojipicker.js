@@ -239,9 +239,15 @@
 
       elOffset.top += this.$el.outerHeight();
 
+      //update left position based on emojistarter position
+      elOffset.left = this.$el.offset().left - positionedParent.offset().left;
+    
+      //make width and height respond to resize as needed
+      this.$picker.width(Math.max(Math.min($(window).width() / 2.5, 400), 280))
+            .height(Math.max(Math.min($(window).height() / 2.5, 350), 100));
 
       if (positionedParent.width() < elOffset.left + this.$picker.width() + 10)
-          elOffset.left = Math.max(positionedParent.width() - this.$picker.width(), 10);
+          elOffset.left = Math.max(positionedParent.width() - this.$picker.width() - 17, 10); //-17 for scrollbar width
 
       if (positionedParent.height() < elOffset.top + this.$picker.height() + 10)
           elOffset.top = Math.max(positionedParent.height() - this.$picker.height(), 10);
