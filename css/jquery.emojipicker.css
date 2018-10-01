@@ -38,9 +38,8 @@
 .emojiPicker section em div:hover {cursor:pointer;}
 
 .emojiPicker section .wrap {width:100%;}
-.emojiPicker section.search {padding-right: 2.5%;}
 .emojiPicker section.search .wrap {padding-top:1%;}
-.emojiPicker section.search input {display:block; width:96%; height:28px; margin:2%; padding:1%; font-size:12px; border:1px solid #ddd; border-radius:4px;}
+.emojiPicker section.search input {display:block; width:95%; height:28px; margin:2% 1%; padding:1%; font-size:12px; border:1px solid #ddd; border-radius:4px;}
 
 .emojiPicker .shortcode {height:40px; background:#eee; border-top:1px solid #ddd; vertical-align:middle;}
 .emojiPicker .shortcode .info {display:none;}
