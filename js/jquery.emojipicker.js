@@ -97,7 +97,7 @@
                               /*,'top',
                               'bottom'*/];
     if($.inArray(this.settings.position,possiblePositions) == -1) {
-      this.settings.position = defaults.position; //current default
+        this.settings.position = this.settings.position; //current default
     }
 
     // Do not enable if on mobile device (emojis already present)
@@ -304,10 +304,10 @@
       }
 
       var emojiShortcode = emojiSpan.attr('class').split('emoji ')[1];
-      var emojiUnicode = toUnicode(findEmoji(emojiShortcode).unicode[defaults.emojiSet]);
+      var emojiUnicode = toUnicode(findEmoji(emojiShortcode).unicode[this.settings.emojiSet]);
 
       insertAtCaret(this.element, emojiUnicode);
-      addToLocalStorage(emojiShortcode);
+      addToLocalStorage(emojiShortcode,this.settings);
       updateRecentlyUsed(emojiShortcode, this.emoji);
 
       // For anyone who is relying on the keyup event
@@ -618,7 +618,7 @@
     return String.fromCodePoint.apply(null, codes);
   }
 
-  function addToLocalStorage(emoji) {
+  function addToLocalStorage(emoji, settings) {
     var recentlyUsedEmojis = [];
     if (localStorage.emojis) {
       recentlyUsedEmojis = JSON.parse(localStorage.emojis);
@@ -631,7 +631,7 @@
     }
     recentlyUsedEmojis.push(emoji);
 
-    if (recentlyUsedEmojis.length > defaults.recentCount) {
+    if (recentlyUsedEmojis.length > settings.recentCount) {
       recentlyUsedEmojis.shift();
     }
 
