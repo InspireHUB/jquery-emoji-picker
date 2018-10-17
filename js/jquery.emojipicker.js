@@ -39,9 +39,9 @@
       MAX_ICON_HEIGHT = 50;
 
   var categories = [
-    { name: 'people', label: 'People' },
-    { name: 'nature', label: 'Nature' },
-    { name: 'food', label: 'Food' },
+    { name: 'people', label: 'Smileys & People' },
+    { name: 'nature', label: 'Animals & Nature' },
+    { name: 'food', label: 'Food & Drink' },
     { name: 'activity', label: 'Activities' },
     { name: 'travel', label: 'Travel & Places' },
     { name: 'object', label: 'Objects' },
@@ -443,9 +443,8 @@
         searchEmojiWrap.find('em').remove();
 
         $.each($.fn.emojiPicker.emojis, $.proxy(function(i, emoji) {
-          var shortcode = emoji.shortcode;
-          if ( shortcode.indexOf(searchTerm) > -1 ) { 
-              results.push('<em class="emoji ' + shortcode + '">' + this.emoji.replace_colons(':' + shortcode + ':') +'</em>');
+            if (_.some(emoji.shortcodes, function(shortCode) { return shortCode.indexOf(searchTerm) !== -1; })) { 
+              results.push('<em class="emoji ' + emoji.name + '">' + this.emoji.replace_colons(':' + emoji.name + ':') +'</em>');
           }
         },this));
         searchEmojiWrap.append(results.join(''));
@@ -488,16 +487,24 @@
   function getPickerHTML(emojiConverter) {
     var nodes = [];
     var aliases = {
-      'undefined': 'object'
+      'undefined': 'object',
+      'Smileys & People': 'people',
+      'Animals & Nature': 'nature',
+      'Food & Drink':'food',
+      'Activities' : 'activity',
+      'Travel & Places' : 'travel',
+      'Objects' : 'object',
+      'Symbols' : 'symbol',
+      'Flags' : 'flag'
     }
     var items = {};
     var localStorageSupport = (typeof(Storage) !== 'undefined') ? true : false;
 
     // Re-Sort Emoji table
     $.each($.fn.emojiPicker.emojis, function(i, emoji) {
-      var category = aliases[ emoji.category ] || emoji.category;
-      items[ category ] = items[ category ] || [];
-      items[ category ].push( emoji );
+      var categoryName = aliases[ emoji.category ] || emoji.category;
+      items[ categoryName ] = items[ categoryName ] || [];
+      items[ categoryName ].push( emoji );
     });
 
     nodes.push('<div class="emojiPicker">');
@@ -556,7 +563,7 @@
       nodes.push('<h1>' + categories[i].label + '</h1><div class="wrap">');
       for (var j = 0; j < category_length; j++) {
         var emoji = items[ categories[i].name ][ j ];
-        nodes.push('<em class="emoji ' + emoji.shortcode + '">' + emojiConverter.replace_colons(':' + emoji.shortcode + ':') +'</em>');
+        nodes.push('<em class="emoji ' + emoji.name + '">' + emojiConverter.replace_colons(':' + emoji.name + ':') +'</em>');
       }
       nodes.push('</div></section>');
     }
