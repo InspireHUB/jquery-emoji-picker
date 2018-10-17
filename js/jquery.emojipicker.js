@@ -442,10 +442,14 @@
         var results = [];
         searchEmojiWrap.find('em').remove();
 
-        $.each($.fn.emojiPicker.emojis, $.proxy(function(i, emoji) {
-            if (_.some(emoji.shortcodes, function(shortCode) { return shortCode.indexOf(searchTerm) !== -1; })) { 
-              results.push('<em class="emoji ' + emoji.name + '">' + this.emoji.replace_colons(':' + emoji.name + ':') +'</em>');
-          }
+          $.each($.fn.emojiPicker.emojis, $.proxy(function(i, emoji) {
+              for (var j = 0; j < emoji.shortcodes.length; j++) {
+                  const shortCode = emoji.shortcodes[j];
+                  if (shortCode.indexOf(searchTerm) !== -1) {
+                      results.push('<em class="emoji ' + emoji.name + '">' + this.emoji.replace_colons(':' + emoji.name + ':') + '</em>');
+                      return;
+                  }
+              }
         },this));
         searchEmojiWrap.append(results.join(''));
       } else {
@@ -588,9 +592,11 @@
   function findEmoji(emojiShortcode) {
     var emojis = $.fn.emojiPicker.emojis;
     for (var i = 0; i < emojis.length; i++) {
-      if (emojis[i].shortcode == emojiShortcode) {
-        return emojis[i];
-      }
+        for (var j = 0; j < emojis[i].shortcodes.length; j++) {
+            if (emojis[i].shortcodes[j] === emojiShortcode) {
+                return emojis[i];
+            }
+        }
     }
   }
 
