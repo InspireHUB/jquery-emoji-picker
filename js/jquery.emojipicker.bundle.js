@@ -99,14 +99,8 @@
     if($.inArray(this.settings.position,possiblePositions) == -1) {
         this.settings.position = this.settings.position; //current default
     }
-
-    // Do not enable if on mobile device (emojis already present)
-    if(!/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
-      this.init();
-    } else {
-      this.isMobile = true;
-    }
-
+    this.init();
+    
   }
 
   $.extend(EmojiPicker.prototype, {
