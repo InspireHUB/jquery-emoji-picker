@@ -302,8 +302,11 @@
       } else {
         emojiSpan = clickTarget.parent().parent();
       }
-
-      var emojiShortcode = emojiSpan.attr('class').split('emoji ')[1];
+      var emojiShortcode = "";
+      //daily emoji
+      if( emojiSpan.attr('class')=== 'tabTitle') emojiShortcode = emojiSpan.context.innerText;
+      //normal emoji
+       else emojiShortcode = emojiSpan.attr('class').split('emoji ')[1];
       var emojiUnicode = toUnicode(findEmoji(emojiShortcode).unicode[this.settings.emojiSet]);
 
       insertAtCaret(this.element, emojiUnicode);
