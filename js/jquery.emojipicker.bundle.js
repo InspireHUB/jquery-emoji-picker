@@ -298,7 +298,7 @@
       }
       var emojiShortcode = "";
       //daily emoji
-      if( emojiSpan.attr('class')=== 'tabTitle') emojiShortcode = emojiSpan.context.innerText;
+      if( emojiSpan.attr('class')=== 'tabTitle') emojiShortcode = emojiSpan.parent().find('.emojiName')[0].innerText.trim();
       //normal emoji
        else emojiShortcode = emojiSpan.attr('class').split('emoji ')[1];
       var emojiUnicode = toUnicode(findEmoji(emojiShortcode).unicode[this.settings.emojiSet]);
